@@ -19,12 +19,19 @@ Template.Result.helpers({
     	];
 
     // isitfire.com is fire af; make sure it stays that way on the results page
-    if (Session.get('url').indexOf("isitfire.com") > -1)
+    if (Session.get("url").indexOf("isitfire.com") > -1) {
+    	Session.setPersistent("heat", 999);
     	return "FOREST FIRE SHIT. CAN YOU FETCH A BROTHER SOME WATER?";
+    }
     else {
-    	var index;
-    	Math.floor(Session.get("heat")/50) > 4 ? index = 4 : index = Math.floor(Session.get("heat")/50);
-    	return heat_levels[index];
+    	if (Session.get("YouTubeId") || Session.get("SoundCloudId")) {
+	    	var index;
+	    	Math.floor(Session.get("heat")/50) > 4 ? index = 4 : index = Math.floor(Session.get("heat")/50);
+	    	return heat_levels[index];
+	    } else {
+	    	Session.setPersistent("heat", Math.random() * 100);
+	    	return heat_levels[Math.floor(Math.random() * 4)];
+	    }
     }
   },
 
