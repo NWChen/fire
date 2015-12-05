@@ -1,7 +1,6 @@
 /*****************************************************************************/
 /* Loading: Functions
 /*****************************************************************************/
-heat = 0;
 
 function getYouTubeID(url) {
 	var rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
@@ -57,7 +56,8 @@ Template.Loading.onCreated(function () {
     	+ id + "&key=" + Meteor.settings.public.YOUTUBE_API_KEY + "&part=statistics";
 		HTTP.call('GET', requestUrl, {}, function(error, response) {
 			data = JSON.parse(response.content).items[0].statistics;
-			heat = data.viewCount + data.likeCount - data.dislikeCount + data.favoriteCount + data.commentCount;
+			var sum = parseInt(data.viewCount) + parseInt(data.likeCount) - parseInt(data.dislikeCount) + parseInt(data.favoriteCount) + parseInt(data.commentCount);
+			Session.setPersistent("heat", normalize(sum, 0, 99999, 0, 10));
 		});
 	}
 
@@ -67,16 +67,16 @@ Template.Loading.onCreated(function () {
 		var requestUrl = "http://api.soundcloud.com/tracks/" + id + "?client_id=" + Meteor.settings.public.SOUNDCLOUD_CLIENT_ID;
 		HTTP.call('GET', requestUrl, {}, function(error, response) {
 			data = JSON.parse(response.content);
-			heat = data.comment_count + data.favoritings_count + data.playback_count;
+			var sum = parseInt(data.comment_count) + parseInt(data.favoritings_count) + parseInt(data.playback_count);
+			Session.setPersistent("heat", normalize(sum, 0, 9999, 0, 10));
 		});
 	}
 });
 
 Template.Loading.onRendered(function () {
-	Session.setPersistent("heat", heat);
   $(".progress-bar").animate({
     width: "100%"
-  }, 500, function () {
+  }, 250, function () {
     window.location.href="/result";
   });
 });
@@ -85,5 +85,5 @@ Template.Loading.onDestroyed(function () {
 });
 
 function normalize(x, in_min, in_max, out_min, out_max) {
-	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+	return ((x - in_min) * (out_max - out_min) / (in_max - in_min)) + out_min;
 }
